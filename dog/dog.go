@@ -4,16 +4,14 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/shana0440/watchdog/config"
 
-	"context"
 	"errors"
 	"log"
 	"os"
-	"os/exec"
-	"strings"
 )
 
 type Dog struct {
 	DirHelper
+	*CommandHelper
 	watcher *fsnotify.Watcher
 	reExec  chan struct{}
 }
@@ -24,9 +22,10 @@ func NewDog(dir string, ignores config.IgnoreFlags) (*Dog, error) {
 		return nil, err
 	}
 	dog := &Dog{
-		DirHelper: DirHelper{ignores},
-		watcher:   w,
-		reExec:    make(chan struct{}),
+		DirHelper:     DirHelper{ignores},
+		CommandHelper: NewCommandHelper(),
+		watcher:       w,
+		reExec:        make(chan struct{}),
 	}
 	dirs, err := dog.GetDirs(dir)
 	if err != nil {
@@ -43,7 +42,7 @@ func (dog *Dog) watchDirs(dirs []string) {
 }
 
 func (dog *Dog) Run(cmd string) error {
-	dog.executeCommand(cmd)
+	dog.Exec(cmd)
 	for {
 		select {
 		case e, ok := <-dog.watcher.Events:
@@ -60,27 +59,11 @@ func (dog *Dog) Run(cmd string) error {
 					dog.watcher.Add(e.Name)
 				}
 			}
-			dog.reExec <- struct{}{}
+			dog.ReExecute()
+		case err := <-dog.CommandHelper.Error:
+			return err
 		}
 	}
-}
-
-func (dog *Dog) executeCommand(cmd string) {
-	go func(cmd string) {
-		for {
-			args := strings.Split(cmd, " ")
-			ctx, cancel := context.WithCancel(context.Background())
-			command := exec.CommandContext(ctx, args[0], args[1:]...)
-			command.Stdout = os.Stdout
-			command.Stderr = os.Stderr
-			err := command.Start()
-			if err != nil {
-				log.Println(err)
-			}
-			<-dog.reExec
-			cancel()
-		}
-	}(cmd)
 }
 
 func (dog *Dog) Close() {
