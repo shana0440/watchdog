@@ -8,7 +8,7 @@ Useage example:
 watchdog -c "go test ./..." -ignore "*.swp" -ignore "vendor"
 ```
 
-Installation
+## Installation
 
 ```bash
 go get github.com/shana0440/watchdog
