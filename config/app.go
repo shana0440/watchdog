@@ -2,6 +2,8 @@ package config
 
 import (
 	"flag"
+	"io/ioutil"
+	"strings"
 )
 
 type IgnoreFlags map[string]struct{}
@@ -30,6 +32,18 @@ func init() {
 func Parse() App {
 	appConfig.Ignores = make(IgnoreFlags)
 	appConfig.Ignores[".git"] = struct{}{}
+	for _, f := range gitignore() {
+		appConfig.Ignores[f] = struct{}{}
+	}
 	flag.Parse()
 	return appConfig
+}
+
+func gitignore() []string {
+	data, err := ioutil.ReadFile(".gitignore")
+	if err != nil {
+		return []string{}
+	}
+	lines := strings.Split(string(data), "\n")
+	return lines
 }
