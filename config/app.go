@@ -4,19 +4,19 @@ import (
 	"flag"
 )
 
-type ignoreFlags map[string]struct{}
+type IgnoreFlags map[string]struct{}
 
-func (f *ignoreFlags) String() string {
+func (f *IgnoreFlags) String() string {
 	return "use to ignore files or dictionary"
 }
 
-func (f *ignoreFlags) Set(value string) error {
+func (f *IgnoreFlags) Set(value string) error {
 	(*f)[value] = struct{}{}
 	return nil
 }
 
 type App struct {
-	Ignores ignoreFlags
+	Ignores IgnoreFlags
 	Command string
 }
 
@@ -28,7 +28,7 @@ func init() {
 }
 
 func Parse() App {
-	appConfig.Ignores = make(ignoreFlags)
+	appConfig.Ignores = make(IgnoreFlags)
 	appConfig.Ignores[".git"] = struct{}{}
 	flag.Parse()
 	return appConfig
