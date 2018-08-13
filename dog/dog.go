@@ -5,6 +5,7 @@ import (
 	"github.com/shana0440/watchdog/config"
 
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -22,28 +23,34 @@ type Dog struct {
 func NewDog(dir string, ignores config.IgnoreFlags) (*Dog, error) {
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatalln("Failed to create watcher", err)
+		return nil, err
 	}
 	dog := &Dog{w, ignores, make(chan struct{})}
-	dirs := dog.getDirRecursivelyWithoutIgnore(dir)
-	log.Println("current watch dirs: ", dirs)
+	dirs, err := dog.getDirRecursivelyWithoutIgnore(dir)
+	if err != nil {
+		return nil, err
+	}
 	dog.watchDirs(dirs)
 	return dog, nil
 }
 
-func (dog *Dog) getDirRecursivelyWithoutIgnore(dir string) []string {
+func (dog *Dog) getDirRecursivelyWithoutIgnore(dir string) ([]string, error) {
 	dirs := []string{dir}
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
-		log.Fatalln("Failed to read dir", err)
+		return nil, err
 	}
 	for _, f := range files {
 		if _, ok := dog.ignores[f.Name()]; f.IsDir() && !ok {
 			newDir := fmt.Sprintf("%s/%s", dir, f.Name())
-			dirs = append(dirs, dog.getDirRecursivelyWithoutIgnore(newDir)...)
+			dir, err := dog.getDirRecursivelyWithoutIgnore(newDir)
+			if err != nil {
+				return nil, err
+			}
+			dirs = append(dirs, dir...)
 		}
 	}
-	return dirs
+	return dirs, nil
 }
 
 func (dog *Dog) watchDirs(dirs []string) {
@@ -52,13 +59,13 @@ func (dog *Dog) watchDirs(dirs []string) {
 	}
 }
 
-func (dog *Dog) Run(cmd string) {
+func (dog *Dog) Run(cmd string) error {
 	dog.executeCommand(cmd)
 	for {
 		select {
 		case e, ok := <-dog.watcher.Events:
 			if !ok {
-				log.Fatalln("Watcher is closed")
+				return errors.New("Watcher is closed")
 			}
 			if _, ok := dog.ignores[e.Name]; ok {
 				continue
@@ -66,11 +73,7 @@ func (dog *Dog) Run(cmd string) {
 			log.Println(e)
 			if e.Op&fsnotify.Create == fsnotify.Create {
 				stat, err := os.Stat(e.Name)
-				if err != nil {
-					log.Println("Failed to get file state", err)
-					continue
-				}
-				if stat.IsDir() {
+				if err == nil && stat.IsDir() {
 					dog.watcher.Add(e.Name)
 				}
 			}
@@ -80,7 +83,7 @@ func (dog *Dog) Run(cmd string) {
 }
 
 func (dog *Dog) executeCommand(cmd string) {
-	go func() {
+	go func(cmd string) {
 		for {
 			args := strings.Split(cmd, " ")
 			ctx, cancel := context.WithCancel(context.Background())
@@ -94,7 +97,7 @@ func (dog *Dog) executeCommand(cmd string) {
 			<-dog.reExec
 			cancel()
 		}
-	}()
+	}(cmd)
 }
 
 func (dog *Dog) Close() {

@@ -11,7 +11,13 @@ func main() {
 	config := config.Parse()
 	log.Printf("config: %#v\n", config)
 
-	dog, _ := dog.NewDog(".", config.Ignores)
+	dog, err := dog.NewDog(".", config.Ignores)
+	if err != nil {
+		log.Fatalln("Failed to create dog", err)
+	}
 	defer dog.Close()
-	dog.Run(config.Command)
+	err = dog.Run(config.Command)
+	if err != nil {
+		log.Fatalln("Failed to run command", err)
+	}
 }
