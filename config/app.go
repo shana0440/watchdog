@@ -25,7 +25,8 @@ type App struct {
 var appConfig App
 
 func init() {
-	flag.Var(&appConfig.Ignores, "ignore", "ignore to watch")
+	flag.Var(&appConfig.Ignores, "ignore", "ignore file or directory")
+	flag.Var(&appConfig.Ignores, "i", "ignore file or directory")
 	flag.StringVar(&appConfig.Command, "c", "", "the command when file change will execute")
 }
 
