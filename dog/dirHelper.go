@@ -20,8 +20,11 @@ func (helper *DirHelper) GetDirs(dir string) ([]string, error) {
 		return nil, err
 	}
 	for _, f := range files {
-		if _, ok := helper.ignores[f.Name()]; f.IsDir() && !ok {
-			newDir := fmt.Sprintf("%s/%s", dir, f.Name())
+		if !f.IsDir() {
+			continue
+		}
+		newDir := fmt.Sprintf("%s/%s", dir, f.Name())
+		if _, ok := helper.ignores[newDir]; !ok {
 			dir, err := helper.GetDirs(newDir)
 			if err != nil {
 				return nil, err
