@@ -2,6 +2,8 @@
 
 execute script when file change
 
+[![asciicast](https://asciinema.org/a/3vsKIrda45uXwrBXsYluxMgi0.png)](https://asciinema.org/a/3vsKIrda45uXwrBXsYluxMgi0)
+
 Useage example:
 
 ```bash
