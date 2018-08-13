@@ -24,6 +24,9 @@ func (helper *DirHelper) GetDirs(dir string) ([]string, error) {
 			continue
 		}
 		newDir := fmt.Sprintf("%s/%s", dir, f.Name())
+		if newDir[:2] == "./" {
+			newDir = newDir[2:]
+		}
 		if _, ok := helper.ignores[newDir]; !ok {
 			dir, err := helper.GetDirs(newDir)
 			if err != nil {
