@@ -49,7 +49,7 @@ func (dog *Dog) Run(cmd string) error {
 			if !ok {
 				return errors.New("Watcher is closed")
 			}
-			if dog.IsIgnoreFile(e.Name) {
+			if dog.IsIgnoreFile(e.Name) || e.Op&fsnotify.Chmod == fsnotify.Chmod {
 				continue
 			}
 			log.Println(e)
