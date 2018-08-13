@@ -40,9 +40,11 @@ func (helper *DirHelper) GetDirs(dir string) ([]string, error) {
 
 // IsIgnoreFile will return file should be ignore or not
 func (helper *DirHelper) IsIgnoreFile(file string) bool {
+	filename := filepath.Base(file)
 	for pattern, _ := range helper.ignores {
-		match, err := filepath.Match(pattern, file)
-		if err == nil && match {
+		matchPath, err := filepath.Match(pattern, file)
+		matchFileName, err := filepath.Match(pattern, filename)
+		if err == nil && (matchPath || matchFileName) {
 			return true
 		}
 	}

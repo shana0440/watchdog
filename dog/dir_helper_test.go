@@ -46,3 +46,12 @@ func TestDirHelperShouldIgnoreWildcardEndsWith(t *testing.T) {
 		t.Error("should ignore README.md~")
 	}
 }
+
+func TestDirHelperShouldIgnoreNestedWildcardExtension(t *testing.T) {
+	ignores := make(config.IgnoreFlags)
+	ignores["*.swp"] = struct{}{}
+	helper := DirHelper{ignores}
+	if !helper.IsIgnoreFile("doc/README.md.swp") {
+		t.Error("should ignore README.md.swp")
+	}
+}
