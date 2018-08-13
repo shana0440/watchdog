@@ -9,9 +9,9 @@ import (
 
 func main() {
 	config := config.Parse()
-	log.Println(config)
+	log.Printf("config: %#v\n", config)
 
 	dog, _ := dog.NewDog(".", config.Ignores)
 	defer dog.Close()
-	dog.Run()
+	dog.Run(config.Command)
 }
