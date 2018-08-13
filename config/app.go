@@ -44,6 +44,14 @@ func gitignore() []string {
 	if err != nil {
 		return []string{}
 	}
-	lines := strings.Split(string(data), "\n")
-	return lines
+	lines := strings.Split(strings.Trim(string(data), "\n"), "\n")
+	res := make([]string, 0, len(lines))
+	for _, line := range lines {
+		if line[0] == '/' {
+			res = append(res, line[1:])
+		} else {
+			res = append(res, line)
+		}
+	}
+	return res
 }
