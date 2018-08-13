@@ -6,8 +6,6 @@ import (
 
 	"context"
 	"errors"
-	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -15,8 +13,8 @@ import (
 )
 
 type Dog struct {
+	DirHelper
 	watcher *fsnotify.Watcher
-	ignores config.IgnoreFlags
 	reExec  chan struct{}
 }
 
@@ -25,32 +23,17 @@ func NewDog(dir string, ignores config.IgnoreFlags) (*Dog, error) {
 	if err != nil {
 		return nil, err
 	}
-	dog := &Dog{w, ignores, make(chan struct{})}
-	dirs, err := dog.getDirRecursivelyWithoutIgnore(dir)
+	dog := &Dog{
+		DirHelper: DirHelper{ignores},
+		watcher:   w,
+		reExec:    make(chan struct{}),
+	}
+	dirs, err := dog.GetDirs(dir)
 	if err != nil {
 		return nil, err
 	}
 	dog.watchDirs(dirs)
 	return dog, nil
-}
-
-func (dog *Dog) getDirRecursivelyWithoutIgnore(dir string) ([]string, error) {
-	dirs := []string{dir}
-	files, err := ioutil.ReadDir(dir)
-	if err != nil {
-		return nil, err
-	}
-	for _, f := range files {
-		if _, ok := dog.ignores[f.Name()]; f.IsDir() && !ok {
-			newDir := fmt.Sprintf("%s/%s", dir, f.Name())
-			dir, err := dog.getDirRecursivelyWithoutIgnore(newDir)
-			if err != nil {
-				return nil, err
-			}
-			dirs = append(dirs, dir...)
-		}
-	}
-	return dirs, nil
 }
 
 func (dog *Dog) watchDirs(dirs []string) {
@@ -67,7 +50,7 @@ func (dog *Dog) Run(cmd string) error {
 			if !ok {
 				return errors.New("Watcher is closed")
 			}
-			if _, ok := dog.ignores[e.Name]; ok {
+			if dog.IsIgnoreFile(e.Name) {
 				continue
 			}
 			log.Println(e)
