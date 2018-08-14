@@ -1,0 +1,20 @@
+language: golang
+
+golang:
+  - "1.9"
+  - "1.10"
+
+install:
+  - go get -t ./...
+
+notifications:
+  email:
+    recipients:
+      - shana0440@gmail.com
+    on_success: always
+    on_failure: always
+
+script: go test ./... -race -coverprofile=coverage.txt -covermode=atomic
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
