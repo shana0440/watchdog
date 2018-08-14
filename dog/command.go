@@ -6,23 +6,24 @@ import (
 	"os/exec"
 )
 
-type CommandHelper struct {
+type Commander interface {
+	Exec(string)
+	ReExecute()
+}
+
+type Command struct {
 	reExecute chan struct{}
 	Error     chan error
 }
 
-func NewCommandHelper() *CommandHelper {
-	return &CommandHelper{
+func NewCommand() *Command {
+	return &Command{
 		reExecute: make(chan struct{}),
 		Error:     make(chan error),
 	}
 }
 
-func (helper *CommandHelper) ReExecute() {
-	helper.reExecute <- struct{}{}
-}
-
-func (helper *CommandHelper) Exec(cmd string) {
+func (helper *Command) Exec(cmd string) {
 	go func(cmd string) {
 		for {
 			ctx, cancel := context.WithCancel(context.Background())
@@ -38,4 +39,8 @@ func (helper *CommandHelper) Exec(cmd string) {
 			command.Wait()
 		}
 	}(cmd)
+}
+
+func (helper *Command) ReExecute() {
+	helper.reExecute <- struct{}{}
 }

@@ -26,7 +26,7 @@ func TestCommandShouldExecute(t *testing.T) {
 		return exec.CommandContext(ctx, name, args...)
 	})
 
-	helper := NewCommandHelper()
+	helper := NewCommand()
 	helper.Exec(cmd)
 	<-shouldExec
 }
@@ -47,7 +47,7 @@ func TestReExecuteShouldReExecuteAndCancelPreviousCommand(t *testing.T) {
 		return exec.CommandContext(ctx, name, args...)
 	})
 
-	helper := NewCommandHelper()
+	helper := NewCommand()
 	helper.Exec(cmd)
 	<-shouldExec
 	helper.ReExecute()
