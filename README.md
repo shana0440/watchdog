@@ -10,7 +10,7 @@ execute script when file change
 Useage example:
 
 ```bash
-watchdog -c "go test ./..." -ignore "*.swp" -ignore "vendor"
+watchdog -c "go test ./..." -i "*.swp" -i "vendor"
 ```
 
 ## Installation
