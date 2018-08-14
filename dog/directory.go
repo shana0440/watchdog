@@ -8,18 +8,23 @@ import (
 	"path/filepath"
 )
 
-type DirHelper struct {
+type Directoryer interface {
+	GetDirs(string) ([]string, error)
+	IsIgnoreFile(string) bool
+}
+
+type Directory struct {
 	ignores config.IgnoreFlags
 }
 
-func NewDirHelper(ignores config.IgnoreFlags) *DirHelper {
-	return &DirHelper{
+func NewDirectory(ignores config.IgnoreFlags) *Directory {
+	return &Directory{
 		ignores: ignores,
 	}
 }
 
 // GetDirs will return recursive dirs under dir, excluded ignore dir
-func (helper *DirHelper) GetDirs(dir string) ([]string, error) {
+func (helper *Directory) GetDirs(dir string) ([]string, error) {
 	dirs := []string{dir}
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -45,7 +50,7 @@ func (helper *DirHelper) GetDirs(dir string) ([]string, error) {
 }
 
 // IsIgnoreFile will return file should be ignore or not
-func (helper *DirHelper) IsIgnoreFile(file string) bool {
+func (helper *Directory) IsIgnoreFile(file string) bool {
 	filename := filepath.Base(file)
 	for pattern := range helper.ignores {
 		matchPath, err := filepath.Match(pattern, file)
