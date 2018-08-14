@@ -19,7 +19,7 @@ func TestDirHelperShouldReturnRecursiveDirs(t *testing.T) {
 
 	ignores := make(config.IgnoreFlags)
 	ignores[ignoreDir] = struct{}{}
-	helper := DirHelper{ignores}
+	helper := NewDirHelper(ignores)
 	dirs, _ := helper.GetDirs(entryDir)
 
 	for _, dir := range []string{entryDir, nestedDir, nestedDir2} {
@@ -32,7 +32,7 @@ func TestDirHelperShouldReturnRecursiveDirs(t *testing.T) {
 func TestDirHelperShouldIgnoreWildcardExtension(t *testing.T) {
 	ignores := make(config.IgnoreFlags)
 	ignores["*.swp"] = struct{}{}
-	helper := DirHelper{ignores}
+	helper := NewDirHelper(ignores)
 	if !helper.IsIgnoreFile("README.md.swp") {
 		t.Error("should ignore README.md.swp")
 	}
@@ -41,7 +41,7 @@ func TestDirHelperShouldIgnoreWildcardExtension(t *testing.T) {
 func TestDirHelperShouldIgnoreWildcardEndsWith(t *testing.T) {
 	ignores := make(config.IgnoreFlags)
 	ignores["*~"] = struct{}{}
-	helper := DirHelper{ignores}
+	helper := NewDirHelper(ignores)
 	if !helper.IsIgnoreFile("README.md~") {
 		t.Error("should ignore README.md~")
 	}
@@ -50,7 +50,7 @@ func TestDirHelperShouldIgnoreWildcardEndsWith(t *testing.T) {
 func TestDirHelperShouldIgnoreNestedWildcardExtension(t *testing.T) {
 	ignores := make(config.IgnoreFlags)
 	ignores["*.swp"] = struct{}{}
-	helper := DirHelper{ignores}
+	helper := NewDirHelper(ignores)
 	if !helper.IsIgnoreFile("doc/README.md.swp") {
 		t.Error("should ignore README.md.swp")
 	}

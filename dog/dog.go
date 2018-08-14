@@ -13,7 +13,7 @@ import (
 )
 
 type Dog struct {
-	DirHelper
+	*DirHelper
 	*CommandHelper
 	watcher *fsnotify.Watcher
 }
@@ -24,7 +24,7 @@ func NewDog(dir string, ignores config.IgnoreFlags) (*Dog, error) {
 		return nil, err
 	}
 	dog := &Dog{
-		DirHelper:     DirHelper{ignores},
+		DirHelper:     NewDirHelper(ignores),
 		CommandHelper: NewCommandHelper(),
 		watcher:       w,
 	}

@@ -12,6 +12,12 @@ type DirHelper struct {
 	ignores config.IgnoreFlags
 }
 
+func NewDirHelper(ignores config.IgnoreFlags) *DirHelper {
+	return &DirHelper{
+		ignores: ignores,
+	}
+}
+
 // GetDirs will return recursive dirs under dir, excluded ignore dir
 func (helper *DirHelper) GetDirs(dir string) ([]string, error) {
 	dirs := []string{dir}
