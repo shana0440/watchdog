@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"io/ioutil"
 	"log"
+	"strings"
 
 	"github.com/shana0440/watchdog/dog"
 	"github.com/spf13/cobra"
@@ -18,6 +20,8 @@ var rootCmd = &cobra.Command{
 	built with shana0440. source code at https://github.com/shana0440/watchdog`,
 	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
+		ignoreGit()
+		log.Println("ignores: ", strings.Join(ignores, ", "))
 		d := dog.NewDirectory(".", ignoreSliceToIgnoreMap(ignores))
 		c := dog.NewCommand(silent)
 		dog, err := dog.NewDog(d, c)
@@ -33,11 +37,11 @@ var rootCmd = &cobra.Command{
 }
 
 func ignoreSliceToIgnoreMap(arr []string) map[string]struct{} {
-	ignores := make(map[string]struct{})
+	ignoresMap := make(map[string]struct{})
 	for _, item := range arr {
-		ignores[item] = struct{}{}
+		ignoresMap[item] = struct{}{}
 	}
-	return ignores
+	return ignoresMap
 }
 
 func init() {
@@ -45,6 +49,14 @@ func init() {
 	rootCmd.MarkFlagRequired("command")
 	rootCmd.Flags().StringArrayVarP(&ignores, "ignore", "i", []string{}, "the file or directory you don't want to trigger command")
 	rootCmd.Flags().BoolVarP(&silent, "silent", "s", false, "clear screen before command execute, if you have better name to describe this function, please let me know")
+}
+
+func ignoreGit() {
+	ignores = append(ignores, ".git")
+	bytes, err := ioutil.ReadFile(".gitignore")
+	if err == nil {
+		ignores = append(ignores, strings.Split(strings.Trim(string(bytes), "\n"), "\n")...)
+	}
 }
 
 func Execute() {
