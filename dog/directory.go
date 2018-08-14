@@ -1,8 +1,6 @@
 package dog
 
 import (
-	"github.com/shana0440/watchdog/config"
-
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -15,10 +13,10 @@ type Directoryer interface {
 
 type Directory struct {
 	entry   string
-	ignores config.IgnoreFlags
+	ignores map[string]struct{}
 }
 
-func NewDirectory(entryDir string, ignores config.IgnoreFlags) *Directory {
+func NewDirectory(entryDir string, ignores map[string]struct{}) *Directory {
 	return &Directory{
 		entry:   entryDir,
 		ignores: ignores,
