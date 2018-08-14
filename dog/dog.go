@@ -13,7 +13,6 @@ type Dog struct {
 	DirHelper
 	*CommandHelper
 	watcher *fsnotify.Watcher
-	reExec  chan struct{}
 }
 
 func NewDog(dir string, ignores config.IgnoreFlags) (*Dog, error) {
@@ -25,7 +24,6 @@ func NewDog(dir string, ignores config.IgnoreFlags) (*Dog, error) {
 		DirHelper:     DirHelper{ignores},
 		CommandHelper: NewCommandHelper(),
 		watcher:       w,
-		reExec:        make(chan struct{}),
 	}
 	dirs, err := dog.GetDirs(dir)
 	if err != nil {
