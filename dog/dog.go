@@ -60,14 +60,14 @@ func (dog *Dog) Run(cmd string) {
 			handlers.NextFunc(func(item interface{}) {
 				event := item.(fsnotify.Event)
 				log.Println(event)
-				dog.AddWactchWhenCreateDir(event)
+				dog.AddWatchWhenCreateDir(event)
 				dog.ReExecute()
 			}),
 		))
 	<-sub
 }
 
-func (dog *Dog) AddWactchWhenCreateDir(event fsnotify.Event) error {
+func (dog *Dog) AddWatchWhenCreateDir(event fsnotify.Event) error {
 	if event.Op&fsnotify.Create == fsnotify.Create {
 		stat, err := os.Stat(event.Name)
 		if err != nil {
