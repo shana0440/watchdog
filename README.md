@@ -1,6 +1,7 @@
 # WatchDog
 
-[![cover.run](https://cover.run/go/https:/github.com/shana0440/watchdog.svg?style=flat&tag=golang-1.10)](https://cover.run/go?tag=golang-1.10&repo=https%3A%2Fgithub.com%2Fshana0440%2Fwatchdog)
+[![Build Status](https://travis-ci.com/shana0440/watchdog.svg?branch=master)](https://travis-ci.com/shana0440/watchdog)
+[![codecov](https://codecov.io/gh/shana0440/watchdog/branch/master/graph/badge.svg)](https://codecov.io/gh/shana0440/watchdog)
 
 execute script when file change
 
