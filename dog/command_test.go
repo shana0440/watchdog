@@ -1,13 +1,13 @@
 package dog
 
 import (
-	"github.com/bouk/monkey"
-	"github.com/stretchr/testify/assert"
-
 	"testing"
 
 	"context"
 	"os/exec"
+
+	"github.com/bouk/monkey"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCommandShouldExecute(t *testing.T) {

@@ -1,13 +1,13 @@
 package dog
 
 import (
-	"github.com/shana0440/watchdog/config"
-	"github.com/stretchr/testify/assert"
-
 	"testing"
 
 	"io/ioutil"
 	"os"
+
+	"github.com/shana0440/watchdog/config"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDirectoryShouldReturnRecursiveDirs(t *testing.T) {

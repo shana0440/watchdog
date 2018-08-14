@@ -1,14 +1,14 @@
 package dog
 
 import (
+	"log"
+	"os"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/reactivex/rxgo/handlers"
 	"github.com/reactivex/rxgo/iterable"
 	"github.com/reactivex/rxgo/observable"
 	"github.com/reactivex/rxgo/observer"
-
-	"log"
-	"os"
 )
 
 type Dog struct {
