@@ -22,8 +22,5 @@ func main() {
 		log.Fatalln("Failed to create dog", err)
 	}
 	defer dog.Close()
-	err = dog.Run(config.Command)
-	if err != nil {
-		log.Fatalln("Failed to run command", err)
-	}
+	dog.Run(config.Command)
 }
