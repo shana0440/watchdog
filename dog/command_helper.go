@@ -35,6 +35,7 @@ func (helper *CommandHelper) Exec(cmd string) {
 			}
 			<-helper.reExecute
 			cancel()
+			command.Wait()
 		}
 	}(cmd)
 }
