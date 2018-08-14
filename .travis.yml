@@ -4,8 +4,13 @@ golang:
   - "1.9"
   - "1.10"
 
+before_install:
+  - mkdir -p $GOPATH/src/github.com/shana0440/watchdog
+  - cp -r ./ $GOPATH/src/github.com/shana0440/watchdog
+  - cd $GOPATH/src/github.com/shana0440/watchdog
+
 install:
-  - go get -t ./...
+  - go get -t -d ./...
 
 notifications:
   email:
@@ -14,7 +19,18 @@ notifications:
     on_success: always
     on_failure: always
 
-script: go test ./... -race -coverprofile=coverage.txt -covermode=atomic
+script:
+  - |
+    set -e;
+    echo "" > coverage.txt;
+
+    for d in $(go list ./... | grep -v vendor); do \
+        go test -race -coverprofile=profile.out -covermode=atomic $d; \
+        if [ -f profile.out ]; then \
+            cat profile.out >> coverage.txt; \
+            rm profile.out; \
+        fi; \
+    done
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
