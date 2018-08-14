@@ -66,3 +66,11 @@ func (helper *Directory) IsIgnoreFile(file string) bool {
 	}
 	return false
 }
+
+func (helper *Directory) GetIgnoreItem() []string {
+	ignores := make([]string, 0, len(helper.ignores))
+	for k := range helper.ignores {
+		ignores = append(ignores, k)
+	}
+	return ignores
+}

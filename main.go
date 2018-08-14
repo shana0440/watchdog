@@ -11,13 +11,9 @@ import (
 
 func main() {
 	config := config.Parse()
-	ignores := make([]string, 0, len(config.Ignores))
-	for k := range config.Ignores {
-		ignores = append(ignores, k)
-	}
-	fmt.Println("ignore: ", strings.Join(ignores, ", "))
 
 	dir := dog.NewDirectory(".", config.Ignores)
+	fmt.Println("Ignores: ", strings.Join(dir.GetIgnoreItem(), ", "))
 	cmd := dog.NewCommand()
 	dog, err := dog.NewDog(dir, cmd)
 	if err != nil {
