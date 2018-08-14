@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/shana0440/watchdog/config"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,7 +16,7 @@ func TestDirectoryShouldReturnRecursiveDirs(t *testing.T) {
 	ioutil.TempFile(entryDir, "")
 	ignoreDir, _ := ioutil.TempDir(entryDir, "")
 
-	ignores := make(config.IgnoreFlags)
+	ignores := make(map[string]struct{})
 	ignores[ignoreDir] = struct{}{}
 	helper := NewDirectory(entryDir, ignores)
 	dirs, _ := helper.GetDirs()
@@ -30,7 +29,7 @@ func TestDirectoryShouldReturnRecursiveDirs(t *testing.T) {
 }
 
 func TestDirectoryShouldIgnoreWildcardExtension(t *testing.T) {
-	ignores := make(config.IgnoreFlags)
+	ignores := make(map[string]struct{})
 	ignores["*.swp"] = struct{}{}
 	helper := NewDirectory(".", ignores)
 	if !helper.IsIgnoreFile("README.md.swp") {
@@ -39,7 +38,7 @@ func TestDirectoryShouldIgnoreWildcardExtension(t *testing.T) {
 }
 
 func TestDirectoryShouldIgnoreWildcardEndsWith(t *testing.T) {
-	ignores := make(config.IgnoreFlags)
+	ignores := make(map[string]struct{})
 	ignores["*~"] = struct{}{}
 	helper := NewDirectory(".", ignores)
 	if !helper.IsIgnoreFile("README.md~") {
@@ -48,7 +47,7 @@ func TestDirectoryShouldIgnoreWildcardEndsWith(t *testing.T) {
 }
 
 func TestDirectoryShouldIgnoreNestedWildcardExtension(t *testing.T) {
-	ignores := make(config.IgnoreFlags)
+	ignores := make(map[string]struct{})
 	ignores["*.swp"] = struct{}{}
 	helper := NewDirectory(".", ignores)
 	if !helper.IsIgnoreFile("doc/README.md.swp") {
