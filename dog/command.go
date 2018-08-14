@@ -12,14 +12,16 @@ type Commander interface {
 }
 
 type Command struct {
-	reExecute chan struct{}
-	Error     chan error
+	reExecute    chan struct{}
+	Error        chan error
+	clearConsole bool
 }
 
-func NewCommand() *Command {
+func NewCommand(clearConsole bool) *Command {
 	return &Command{
-		reExecute: make(chan struct{}),
-		Error:     make(chan error),
+		reExecute:    make(chan struct{}),
+		Error:        make(chan error),
+		clearConsole: clearConsole,
 	}
 }
 
@@ -37,6 +39,11 @@ func (helper *Command) Exec(cmd string) {
 			<-helper.reExecute
 			cancel()
 			command.Wait()
+			if helper.clearConsole {
+				c := exec.Command("clear")
+				c.Stdout = os.Stdout
+				c.Run()
+			}
 		}
 	}(cmd)
 }

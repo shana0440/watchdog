@@ -18,8 +18,9 @@ func (f *IgnoreFlags) Set(value string) error {
 }
 
 type App struct {
-	Ignores IgnoreFlags
-	Command string
+	Ignores      IgnoreFlags
+	Command      string
+	PurgeConsole bool
 }
 
 var appConfig App
@@ -28,6 +29,7 @@ func init() {
 	flag.Var(&appConfig.Ignores, "ignore", "ignore file or directory")
 	flag.Var(&appConfig.Ignores, "i", "ignore file or directory")
 	flag.StringVar(&appConfig.Command, "c", "", "the command when file change will execute")
+	flag.BoolVar(&appConfig.PurgeConsole, "p", false, "clear console when command execute")
 }
 
 func Parse() App {

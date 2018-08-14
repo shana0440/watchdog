@@ -14,7 +14,7 @@ func main() {
 
 	dir := dog.NewDirectory(".", config.Ignores)
 	fmt.Println("Ignores: ", strings.Join(dir.GetIgnoreItem(), ", "))
-	cmd := dog.NewCommand()
+	cmd := dog.NewCommand(config.PurgeConsole)
 	dog, err := dog.NewDog(dir, cmd)
 	if err != nil {
 		log.Fatalln("Failed to create dog", err)
