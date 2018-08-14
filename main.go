@@ -17,7 +17,9 @@ func main() {
 	}
 	fmt.Println("ignore: ", strings.Join(ignores, ", "))
 
-	dog, err := dog.NewDog(".", config.Ignores)
+	dir := dog.NewDirectory(".", config.Ignores)
+	cmd := dog.NewCommand()
+	dog, err := dog.NewDog(dir, cmd)
 	if err != nil {
 		log.Fatalln("Failed to create dog", err)
 	}

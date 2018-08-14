@@ -6,7 +6,6 @@ import (
 	"github.com/reactivex/rxgo/iterable"
 	"github.com/reactivex/rxgo/observable"
 	"github.com/reactivex/rxgo/observer"
-	"github.com/shana0440/watchdog/config"
 
 	"log"
 	"os"
@@ -18,14 +17,14 @@ type Dog struct {
 	watcher *fsnotify.Watcher
 }
 
-func NewDog(dir string, ignores config.IgnoreFlags) (*Dog, error) {
+func NewDog(dir Directoryer, cmd Commander) (*Dog, error) {
 	w, err := fsnotify.NewWatcher()
 	if err != nil {
 		return nil, err
 	}
 	dog := &Dog{
-		Directoryer: NewDirectory(dir, ignores),
-		Commander:   NewCommand(),
+		Directoryer: dir,
+		Commander:   cmd,
 		watcher:     w,
 	}
 	dirs, err := dog.GetDirs()
