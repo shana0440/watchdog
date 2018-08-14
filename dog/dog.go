@@ -22,26 +22,30 @@ func NewDog(dir Directoryer, cmd Commander) (*Dog, error) {
 	if err != nil {
 		return nil, err
 	}
-	dog := &Dog{
+	dog := Dog{
 		Directoryer: dir,
 		Commander:   cmd,
 		watcher:     w,
 	}
-	dirs, err := dog.GetDirs()
-	if err != nil {
-		return nil, err
-	}
-	dog.watchDirs(dirs)
-	return dog, nil
+	return &dog, nil
 }
 
-func (dog *Dog) watchDirs(dirs []string) {
+func (dog *Dog) watch() error {
+	dirs, err := dog.GetDirs()
+	if err != nil {
+		return err
+	}
 	for _, dir := range dirs {
 		dog.watcher.Add(dir)
 	}
+	return nil
 }
 
-func (dog *Dog) Run(cmd string) {
+func (dog *Dog) Run(cmd string) error {
+	err := dog.watch()
+	if err != nil {
+		return err
+	}
 	dog.Exec(cmd)
 	// iterable.New only receive chan interface{}, <-chan interface{}, []interface{}
 	it, _ := iterable.New(toInterfaceChan(dog.watcher.Events))
@@ -64,6 +68,7 @@ func (dog *Dog) Run(cmd string) {
 			}),
 		))
 	<-sub
+	return nil
 }
 
 func (dog *Dog) AddWatchWhenCreateDir(event fsnotify.Event) error {
