@@ -24,11 +24,11 @@ func NewDog(dir string, ignores config.IgnoreFlags) (*Dog, error) {
 		return nil, err
 	}
 	dog := &Dog{
-		Directoryer: NewDirectory(ignores),
+		Directoryer: NewDirectory(dir, ignores),
 		Commander:   NewCommand(),
 		watcher:     w,
 	}
-	dirs, err := dog.GetDirs(dir)
+	dirs, err := dog.GetDirs()
 	if err != nil {
 		return nil, err
 	}

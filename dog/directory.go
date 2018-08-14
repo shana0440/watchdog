@@ -9,24 +9,29 @@ import (
 )
 
 type Directoryer interface {
-	GetDirs(string) ([]string, error)
+	GetDirs(...string) ([]string, error)
 	IsIgnoreFile(string) bool
 }
 
 type Directory struct {
+	entry   string
 	ignores config.IgnoreFlags
 }
 
-func NewDirectory(ignores config.IgnoreFlags) *Directory {
+func NewDirectory(entryDir string, ignores config.IgnoreFlags) *Directory {
 	return &Directory{
+		entry:   entryDir,
 		ignores: ignores,
 	}
 }
 
-// GetDirs will return recursive dirs under dir, excluded ignore dir
-func (helper *Directory) GetDirs(dir string) ([]string, error) {
-	dirs := []string{dir}
-	files, err := ioutil.ReadDir(dir)
+// GetDirs will return recursive dirs under entry, excluded ignore dir
+func (helper *Directory) GetDirs(dirs ...string) ([]string, error) {
+	if len(dirs) == 0 {
+		dirs = append(dirs, helper.entry)
+	}
+	currentDir := dirs[0]
+	files, err := ioutil.ReadDir(currentDir)
 	if err != nil {
 		return nil, err
 	}
@@ -34,16 +39,16 @@ func (helper *Directory) GetDirs(dir string) ([]string, error) {
 		if !f.IsDir() {
 			continue
 		}
-		newDir := fmt.Sprintf("%s/%s", dir, f.Name())
+		newDir := fmt.Sprintf("%s/%s", currentDir, f.Name())
 		if newDir[:2] == "./" {
 			newDir = newDir[2:]
 		}
 		if _, ok := helper.ignores[newDir]; !ok {
-			dir, err := helper.GetDirs(newDir)
+			underDirs, err := helper.GetDirs(newDir)
 			if err != nil {
 				return nil, err
 			}
-			dirs = append(dirs, dir...)
+			dirs = append(dirs, underDirs...)
 		}
 	}
 	return dirs, nil
