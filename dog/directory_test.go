@@ -3,53 +3,65 @@ package dog
 import (
 	"testing"
 
-	"io/ioutil"
 	"os"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func TestDirectoryShould(t *testing.T) {
+func TestGetDirsShould(t *testing.T) {
 	t.Run("ReturnRecursiveDirs", func(t *testing.T) {
-		entryDir, _ := ioutil.TempDir("", "")
-		nestedDir, _ := ioutil.TempDir(entryDir, "")
-		nestedDir2, _ := ioutil.TempDir(nestedDir, "")
-		ioutil.TempFile(entryDir, "")
-		ignoreDir, _ := ioutil.TempDir(entryDir, "")
+		dir := NewDirectory(".", []string{})
+		os.MkdirAll("./should/return/recursive/dir", 0777)
+		os.MkdirAll("./should/return/dir", 0777)
 
-		ignores := make(map[string]struct{})
-		ignores[ignoreDir] = struct{}{}
-		helper := NewDirectory(entryDir, ignores)
-		dirs, _ := helper.GetDirs()
+		actual, _ := dir.GetDirs()
 
-		for _, dir := range []string{entryDir, nestedDir, nestedDir2} {
-			assert.Contains(t, dirs, dir)
-		}
-		assert.NotContains(t, dirs, ignoreDir)
-		os.RemoveAll(entryDir)
+		assert.ElementsMatch(
+			t,
+			[]string{
+				".",
+				"should",
+				"should/return",
+				"should/return/dir",
+				"should/return/recursive",
+				"should/return/recursive/dir",
+			},
+			actual,
+		)
 	})
-	t.Run("IgnoreWildcardExtension", func(t *testing.T) {
-		ignores := make(map[string]struct{})
-		ignores["*.swp"] = struct{}{}
-		helper := NewDirectory(".", ignores)
-		if !helper.IsIgnoreFile("README.md.swp") {
-			t.Error("should ignore README.md.swp")
-		}
+
+	t.Run("IgnoreExcludeDirs", func(t *testing.T) {
+		dir := NewDirectory(".", []string{"should/return"})
+		os.MkdirAll("./should/return/recursive/dir", 0777)
+		os.MkdirAll("./should/return/dir", 0777)
+
+		actual, _ := dir.GetDirs()
+
+		assert.ElementsMatch(
+			t,
+			[]string{
+				".",
+				"should",
+			},
+			actual,
+		)
 	})
-	t.Run("IgnoreWildcardEndsWith", func(t *testing.T) {
-		ignores := make(map[string]struct{})
-		ignores["*~"] = struct{}{}
-		helper := NewDirectory(".", ignores)
-		if !helper.IsIgnoreFile("README.md~") {
-			t.Error("should ignore README.md~")
-		}
+}
+
+func TestShouldIgnoreShould(t *testing.T) {
+	t.Run("ReturnTrueWhenFileMatchIgnorePattern", func(t *testing.T) {
+		dir := NewDirectory(".", []string{"*.swp", "*~", "dir/*.db"})
+		assert.True(t, dir.ShouldIgnore("hello.swp"))
+		assert.True(t, dir.ShouldIgnore("hello~"))
+		assert.True(t, dir.ShouldIgnore("tmp/hello.swp"))
+		assert.True(t, dir.ShouldIgnore("tmp/hello~"))
+		assert.True(t, dir.ShouldIgnore("dir/tmp.db"))
 	})
-	t.Run("IgnoreNestedWildcardExtension", func(t *testing.T) {
-		ignores := make(map[string]struct{})
-		ignores["*.swp"] = struct{}{}
-		helper := NewDirectory(".", ignores)
-		if !helper.IsIgnoreFile("doc/README.md.swp") {
-			t.Error("should ignore README.md.swp")
-		}
+
+	t.Run("ReturnFalseWhenFileNotMatchIgnorePattern", func(t *testing.T) {
+		dir := NewDirectory(".", []string{"*.swp", "*~", "dir/*.db"})
+		assert.False(t, dir.ShouldIgnore("hello.md"))
+		assert.False(t, dir.ShouldIgnore("hello"))
+		assert.False(t, dir.ShouldIgnore("tmp.db"))
 	})
 }

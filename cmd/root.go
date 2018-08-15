@@ -22,7 +22,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		ignoreGit()
 		log.Println("ignores: ", strings.Join(ignores, ", "))
-		d := dog.NewDirectory(".", ignoreSliceToIgnoreMap(ignores))
+		d := dog.NewDirectory(".", ignores)
 		c := dog.NewCommand(silent)
 		dog, err := dog.NewDog(d, c)
 		if err != nil {
@@ -34,14 +34,6 @@ var rootCmd = &cobra.Command{
 			log.Fatalln("can't watch files", err)
 		}
 	},
-}
-
-func ignoreSliceToIgnoreMap(arr []string) map[string]struct{} {
-	ignoresMap := make(map[string]struct{})
-	for _, item := range arr {
-		ignoresMap[item] = struct{}{}
-	}
-	return ignoresMap
 }
 
 func init() {

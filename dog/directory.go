@@ -8,7 +8,7 @@ import (
 
 type Directoryer interface {
 	GetDirs(...string) ([]string, error)
-	IsIgnoreFile(string) bool
+	ShouldIgnore(string) bool
 }
 
 type Directory struct {
@@ -16,10 +16,14 @@ type Directory struct {
 	ignores map[string]struct{}
 }
 
-func NewDirectory(entryDir string, ignores map[string]struct{}) *Directory {
+func NewDirectory(entryDir string, ignores []string) *Directory {
+	ignoresMap := make(map[string]struct{})
+	for _, path := range ignores {
+		ignoresMap[path] = struct{}{}
+	}
 	return &Directory{
 		entry:   entryDir,
-		ignores: ignores,
+		ignores: ignoresMap,
 	}
 }
 
@@ -52,8 +56,8 @@ func (helper *Directory) GetDirs(dirs ...string) ([]string, error) {
 	return dirs, nil
 }
 
-// IsIgnoreFile will return file should be ignore or not
-func (helper *Directory) IsIgnoreFile(file string) bool {
+// ShouldIgnore will return file should be ignore or not
+func (helper *Directory) ShouldIgnore(file string) bool {
 	filename := filepath.Base(file)
 	for pattern := range helper.ignores {
 		matchPath, err := filepath.Match(pattern, file)

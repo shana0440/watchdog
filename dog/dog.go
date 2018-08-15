@@ -57,7 +57,7 @@ func (dog *Dog) Run(cmd string) error {
 		}).
 		Filter(func(item interface{}) bool {
 			event := item.(fsnotify.Event)
-			return !dog.IsIgnoreFile(event.Name)
+			return !dog.ShouldIgnore(event.Name)
 		}).
 		Subscribe(observer.New(
 			handlers.NextFunc(func(item interface{}) {
