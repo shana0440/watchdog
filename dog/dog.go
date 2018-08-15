@@ -14,38 +14,30 @@ import (
 type Dog struct {
 	Directoryer
 	Commander
-	watcher *fsnotify.Watcher
+	Watcher
 }
 
-func NewDog(dir Directoryer, cmd Commander) (*Dog, error) {
-	w, err := fsnotify.NewWatcher()
-	if err != nil {
-		return nil, err
-	}
+func NewDog(dir Directoryer, cmd Commander, watcher Watcher) *Dog {
 	dog := Dog{
 		Directoryer: dir,
 		Commander:   cmd,
-		watcher:     w,
+		Watcher:     watcher,
 	}
-	return &dog, nil
+	return &dog
 }
 
-func (dog *Dog) watch() error {
+func (dog *Dog) watch() {
 	dirs := dog.GetDirs()
 	for _, dir := range dirs {
-		dog.watcher.Add(dir)
+		dog.Add(dir)
 	}
-	return nil
 }
 
 func (dog *Dog) Run(cmd string) error {
-	err := dog.watch()
-	if err != nil {
-		return err
-	}
+	dog.watch()
 	dog.Exec(cmd)
 	// iterable.New only receive chan interface{}, <-chan interface{}, []interface{}
-	it, _ := iterable.New(toInterfaceChan(dog.watcher.Events))
+	it, _ := iterable.New(dog.Events())
 	sub := observable.
 		From(it).
 		Filter(func(item interface{}) bool {
@@ -75,23 +67,12 @@ func (dog *Dog) addWatchWhenCreateDir(event fsnotify.Event) error {
 			return err
 		}
 		if stat.IsDir() {
-			dog.watcher.Add(event.Name)
+			dog.Add(event.Name)
 		}
 	}
 	return nil
 }
 
 func (dog *Dog) Close() {
-	dog.watcher.Close()
-}
-
-func toInterfaceChan(ch chan fsnotify.Event) <-chan interface{} {
-	channel := make(chan interface{})
-	go func() {
-		for {
-			var data interface{} = <-ch
-			channel <- data
-		}
-	}()
-	return channel
+	dog.Close()
 }

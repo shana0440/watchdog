@@ -24,12 +24,10 @@ var rootCmd = &cobra.Command{
 		log.Println("ignores: ", strings.Join(ignores, ", "))
 		d := dog.NewDirectory(".", ignores)
 		c := dog.NewCommand(silent)
-		dog, err := dog.NewDog(d, c)
-		if err != nil {
-			log.Fatalln("can't create watcher", err)
-		}
+		w := dog.NewWatch()
+		dog := dog.NewDog(d, c, w)
 		defer dog.Close()
-		err = dog.Run(command)
+		err := dog.Run(command)
 		if err != nil {
 			log.Fatalln("can't watch files", err)
 		}
