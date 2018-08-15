@@ -36,7 +36,9 @@ func (m *MockCommand) ReExecute() {
 }
 
 func (m *MockCommand) Errors() chan error {
-	return make(chan error)
+	ch := make(chan error)
+	close(ch)
+	return ch
 }
 
 type MockWatch struct {

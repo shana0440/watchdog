@@ -37,9 +37,19 @@ func (dog *Dog) Run(cmd string) error {
 	dog.watch()
 	dog.Exec(cmd)
 	// iterable.New only receive chan interface{}, <-chan interface{}, []interface{}
-	it, _ := iterable.New(dog.Events())
+	it, _ := iterable.New(dog.EventsAndErrorsStream())
 	sub := observable.
 		From(it).
+		Filter(func(item interface{}) bool {
+			switch item.(type) {
+			case fsnotify.Event:
+				return true
+			case error:
+				log.Println(item)
+				return false
+			}
+			return false
+		}).
 		Filter(func(item interface{}) bool {
 			event := item.(fsnotify.Event)
 			return event.Op&fsnotify.Chmod != fsnotify.Chmod
@@ -58,6 +68,36 @@ func (dog *Dog) Run(cmd string) error {
 		))
 	<-sub
 	return nil
+}
+
+func (dog *Dog) EventsAndErrorsStream() <-chan interface{} {
+	ch := make(chan interface{})
+	go func() {
+		event, err := false, false
+		for {
+			select {
+			case data, ok := <-dog.Events():
+				if ok {
+					ch <- data
+				} else {
+					event = true
+				}
+
+			case data, ok := <-dog.Errors():
+				if ok {
+					ch <- data
+				} else {
+					err = true
+				}
+			}
+
+			if event && err {
+				close(ch)
+				break
+			}
+		}
+	}()
+	return ch
 }
 
 func (dog *Dog) addWatchWhenCreateDir(event fsnotify.Event) error {
