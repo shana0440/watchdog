@@ -7,7 +7,7 @@ import (
 )
 
 type Directoryer interface {
-	GetDirs(...string) ([]string, error)
+	GetDirs() []string
 	ShouldIgnore(string) bool
 }
 
@@ -29,30 +29,28 @@ func NewDirectory(entryDir string, ignores []string) *Directory {
 }
 
 // GetDirs will return recursive dirs under entry, excluded ignore dir
-func (helper *Directory) GetDirs(dirs ...string) ([]string, error) {
-	if len(dirs) == 0 {
-		dirs = append(dirs, helper.entry)
-	}
-	currentDir := dirs[0]
-	files, err := ioutil.ReadDir(currentDir)
-	if err != nil {
-		return nil, err
-	}
+func (helper *Directory) GetDirs() []string {
+	dirs := helper.getRecursiveDirs(helper.entry)
+	return dirs
+}
+
+func (helper *Directory) getRecursiveDirs(dir string) []string {
+	dirs := []string{dir}
+	// dir must start with entry, and getRecursiveDirs only receive dirs under entry
+	// so won't happend dir not exists error
+	files, _ := ioutil.ReadDir(dir)
 	for _, f := range files {
 		if !f.IsDir() {
 			continue
 		}
-		newDir := fmt.Sprintf("%s/%s", currentDir, f.Name())
-		newDir = getRelPath(helper.entry, newDir)
-		if _, ok := helper.ignores[newDir]; !ok {
-			underDirs, err := helper.GetDirs(newDir)
-			if err != nil {
-				return nil, err
-			}
-			dirs = append(dirs, underDirs...)
+		child := fmt.Sprintf("%s/%s", dir, f.Name())
+		child = getRelPath(helper.entry, child)
+		if _, ok := helper.ignores[child]; !ok {
+			childDirs := helper.getRecursiveDirs(child)
+			dirs = append(dirs, childDirs...)
 		}
 	}
-	return dirs, nil
+	return dirs
 }
 
 // ShouldIgnore will return file should be ignore or not

@@ -14,7 +14,7 @@ func TestGetDirsShould(t *testing.T) {
 		os.MkdirAll("./should/return/recursive/dir", 0777)
 		os.MkdirAll("./should/return/dir", 0777)
 
-		actual, _ := dir.GetDirs()
+		actual := dir.GetDirs()
 
 		assert.ElementsMatch(
 			t,
@@ -35,7 +35,7 @@ func TestGetDirsShould(t *testing.T) {
 		os.MkdirAll("./should/return/recursive/dir", 0777)
 		os.MkdirAll("./should/return/dir", 0777)
 
-		actual, _ := dir.GetDirs()
+		actual := dir.GetDirs()
 
 		assert.ElementsMatch(
 			t,

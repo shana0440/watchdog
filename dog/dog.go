@@ -31,10 +31,7 @@ func NewDog(dir Directoryer, cmd Commander) (*Dog, error) {
 }
 
 func (dog *Dog) watch() error {
-	dirs, err := dog.GetDirs()
-	if err != nil {
-		return err
-	}
+	dirs := dog.GetDirs()
 	for _, dir := range dirs {
 		dog.watcher.Add(dir)
 	}
