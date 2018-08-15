@@ -8,19 +8,20 @@ import (
 
 type Commander interface {
 	Exec(string)
+	Errors() chan error
 	ReExecute()
 }
 
 type Command struct {
 	reExecute    chan struct{}
-	Error        chan error
+	errors       chan error
 	clearConsole bool
 }
 
 func NewCommand(clearConsole bool) *Command {
 	return &Command{
 		reExecute:    make(chan struct{}),
-		Error:        make(chan error),
+		errors:       make(chan error),
 		clearConsole: clearConsole,
 	}
 }
@@ -32,20 +33,31 @@ func (helper *Command) Exec(cmd string) {
 			command := exec.CommandContext(ctx, "sh", "-c", cmd)
 			command.Stdout = os.Stdout
 			command.Stderr = os.Stderr
-			err := command.Start()
-			if err != nil {
-				helper.Error <- err
-			}
+			// sh will not happen error, cmd will, but will return via Wait(), not Start()
+			command.Start()
+			go func() {
+				err := command.Wait()
+				if err != nil {
+					helper.errors <- err
+				}
+			}()
 			<-helper.reExecute
 			cancel()
-			command.Wait()
-			if helper.clearConsole {
-				c := exec.Command("clear")
-				c.Stdout = os.Stdout
-				c.Run()
-			}
+			clearConsoleIfNeed(helper.clearConsole)
 		}
 	}(cmd)
+}
+
+func clearConsoleIfNeed(clear bool) {
+	if clear {
+		c := exec.Command("clear")
+		c.Stdout = os.Stdout
+		c.Run()
+	}
+}
+
+func (helper *Command) Errors() chan error {
+	return helper.errors
 }
 
 func (helper *Command) ReExecute() {

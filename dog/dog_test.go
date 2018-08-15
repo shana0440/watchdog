@@ -35,6 +35,10 @@ func (m *MockCommand) ReExecute() {
 	m.Called()
 }
 
+func (m *MockCommand) Errors() chan error {
+	return make(chan error)
+}
+
 type MockWatch struct {
 	mock.Mock
 }
