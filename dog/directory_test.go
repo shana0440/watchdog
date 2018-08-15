@@ -31,7 +31,7 @@ func TestGetDirsShould(t *testing.T) {
 	})
 
 	t.Run("IgnoreExcludeDirs", func(t *testing.T) {
-		dir := NewDirectory(".", []string{"should/return"})
+		dir := NewDirectory(".", []string{"should/return/dir", "./should/return/recursive"})
 		os.MkdirAll("./should/return/recursive/dir", 0777)
 		os.MkdirAll("./should/return/dir", 0777)
 
@@ -42,6 +42,7 @@ func TestGetDirsShould(t *testing.T) {
 			[]string{
 				".",
 				"should",
+				"should/return",
 			},
 			actual,
 		)
@@ -63,5 +64,12 @@ func TestShouldIgnoreShould(t *testing.T) {
 		assert.False(t, dir.ShouldIgnore("hello.md"))
 		assert.False(t, dir.ShouldIgnore("hello"))
 		assert.False(t, dir.ShouldIgnore("tmp.db"))
+	})
+}
+
+func TestGetRelPathShould(t *testing.T) {
+	t.Run("ReturnRelPathWithoutBasePath", func(t *testing.T) {
+		actual := getRelPath(".", "./tmp")
+		assert.Equal(t, "tmp", actual)
 	})
 }

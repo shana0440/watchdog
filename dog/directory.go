@@ -19,6 +19,7 @@ type Directory struct {
 func NewDirectory(entryDir string, ignores []string) *Directory {
 	ignoresMap := make(map[string]struct{})
 	for _, path := range ignores {
+		path = getRelPath(entryDir, path)
 		ignoresMap[path] = struct{}{}
 	}
 	return &Directory{
@@ -42,9 +43,7 @@ func (helper *Directory) GetDirs(dirs ...string) ([]string, error) {
 			continue
 		}
 		newDir := fmt.Sprintf("%s/%s", currentDir, f.Name())
-		if newDir[:2] == "./" {
-			newDir = newDir[2:]
-		}
+		newDir = getRelPath(helper.entry, newDir)
 		if _, ok := helper.ignores[newDir]; !ok {
 			underDirs, err := helper.GetDirs(newDir)
 			if err != nil {
@@ -67,4 +66,13 @@ func (helper *Directory) ShouldIgnore(file string) bool {
 		}
 	}
 	return false
+}
+
+// getRelPath will make all path start with base and has consistency
+func getRelPath(base, target string) string {
+	path, err := filepath.Rel(base, target)
+	if err != nil {
+		panic(err)
+	}
+	return path
 }
