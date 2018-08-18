@@ -1,10 +1,21 @@
 language: golang
 
+os:
+  - osx
+  - linux
+
+sudo: true
+
 golang:
   - "1.9"
   - "1.10"
 
 before_install:
+  - |
+    if [ "$TRAVIS_OS_NAME" = "osx" ]; then
+      export GOPATH=/Users/travis/go
+    fi
+  - env
   - mkdir -p $GOPATH/src/github.com/shana0440/watchdog
   - cp -r ./ $GOPATH/src/github.com/shana0440/watchdog
   - cd $GOPATH/src/github.com/shana0440/watchdog
@@ -34,3 +45,14 @@ script:
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
+
+before_deploy:
+  - go build -o "watchdog-$TRAVIS_OS_NAME" main.go
+
+deploy:
+  provider: releases
+  api_key: "$GITHUB_TOKEN"
+  file: "watchdog-$TRAVIS_OS_NAME"
+  on:
+    tags: true
+  skip_cleanup: true
