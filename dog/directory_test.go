@@ -13,6 +13,7 @@ func TestGetDirsShould(t *testing.T) {
 		dir := NewDirectory(".", []string{}, []string{})
 		os.MkdirAll("./should/return/recursive/dir", 0777)
 		os.MkdirAll("./should/return/dir", 0777)
+		defer os.RemoveAll("./should")
 
 		actual := dir.GetDirs()
 
@@ -34,6 +35,7 @@ func TestGetDirsShould(t *testing.T) {
 		dir := NewDirectory(".", []string{"should/return/dir", "./should/return/recursive"}, []string{})
 		os.MkdirAll("./should/return/recursive/dir", 0777)
 		os.MkdirAll("./should/return/dir", 0777)
+		defer os.RemoveAll("./should")
 
 		actual := dir.GetDirs()
 
@@ -47,6 +49,7 @@ func TestGetDirsShould(t *testing.T) {
 			actual,
 		)
 	})
+
 }
 
 func TestShouldIgnoreShould(t *testing.T) {
