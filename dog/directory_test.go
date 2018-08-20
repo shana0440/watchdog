@@ -10,7 +10,7 @@ import (
 
 func TestGetDirsShould(t *testing.T) {
 	t.Run("ReturnRecursiveDirs", func(t *testing.T) {
-		dir := NewDirectory(".", []string{})
+		dir := NewDirectory(".", []string{}, []string{})
 		os.MkdirAll("./should/return/recursive/dir", 0777)
 		os.MkdirAll("./should/return/dir", 0777)
 
@@ -31,7 +31,7 @@ func TestGetDirsShould(t *testing.T) {
 	})
 
 	t.Run("IgnoreExcludeDirs", func(t *testing.T) {
-		dir := NewDirectory(".", []string{"should/return/dir", "./should/return/recursive"})
+		dir := NewDirectory(".", []string{"should/return/dir", "./should/return/recursive"}, []string{})
 		os.MkdirAll("./should/return/recursive/dir", 0777)
 		os.MkdirAll("./should/return/dir", 0777)
 
@@ -51,7 +51,7 @@ func TestGetDirsShould(t *testing.T) {
 
 func TestShouldIgnoreShould(t *testing.T) {
 	t.Run("ReturnTrueWhenFileMatchIgnorePattern", func(t *testing.T) {
-		dir := NewDirectory(".", []string{"*.swp", "*~", "dir/*.db"})
+		dir := NewDirectory(".", []string{"*.swp", "*~", "dir/*.db"}, []string{})
 		assert.True(t, dir.ShouldIgnore("hello.swp"))
 		assert.True(t, dir.ShouldIgnore("hello~"))
 		assert.True(t, dir.ShouldIgnore("tmp/hello.swp"))
@@ -60,10 +60,28 @@ func TestShouldIgnoreShould(t *testing.T) {
 	})
 
 	t.Run("ReturnFalseWhenFileNotMatchIgnorePattern", func(t *testing.T) {
-		dir := NewDirectory(".", []string{"*.swp", "*~", "dir/*.db"})
+		dir := NewDirectory(".", []string{"*.swp", "*~", "dir/*.db"}, []string{})
 		assert.False(t, dir.ShouldIgnore("hello.md"))
 		assert.False(t, dir.ShouldIgnore("hello"))
 		assert.False(t, dir.ShouldIgnore("tmp.db"))
+	})
+
+	t.Run("ReturnFalseWhenFileMatchMatchPattern", func(t *testing.T) {
+		dir := NewDirectory(".", []string{}, []string{"*.go", "dir/*.db"})
+		assert.False(t, dir.ShouldIgnore("hello.go"))
+		assert.False(t, dir.ShouldIgnore("tmp/hello.go"))
+		assert.False(t, dir.ShouldIgnore("dir/tmp.db"))
+	})
+
+	t.Run("ReturnTrueWhenFileNotMatchMatchPattern", func(t *testing.T) {
+		dir := NewDirectory(".", []string{}, []string{"*.go", "dir/*.db"})
+		assert.True(t, dir.ShouldIgnore("hello.php"))
+		assert.True(t, dir.ShouldIgnore("tmp.db"))
+	})
+
+	t.Run("ReturnTrueWhenFileMatchMatchPatternAndIgnorePattern", func(t *testing.T) {
+		dir := NewDirectory(".", []string{"*.go"}, []string{"*.go"})
+		assert.True(t, dir.ShouldIgnore("hello.go"))
 	})
 }
 

@@ -14,9 +14,10 @@ type Directoryer interface {
 type Directory struct {
 	entry   string
 	ignores map[string]struct{}
+	matchs  []string
 }
 
-func NewDirectory(entryDir string, ignores []string) *Directory {
+func NewDirectory(entryDir string, ignores []string, matchs []string) *Directory {
 	ignoresMap := make(map[string]struct{})
 	for _, path := range ignores {
 		path = getRelPath(entryDir, path)
@@ -25,6 +26,7 @@ func NewDirectory(entryDir string, ignores []string) *Directory {
 	return &Directory{
 		entry:   entryDir,
 		ignores: ignoresMap,
+		matchs:  matchs,
 	}
 }
 
@@ -63,7 +65,16 @@ func (helper *Directory) ShouldIgnore(file string) bool {
 			return true
 		}
 	}
-	return false
+	for _, pattern := range helper.matchs {
+		matchPath, err := filepath.Match(pattern, file)
+		matchFileName, err := filepath.Match(pattern, filename)
+		if err == nil && (matchPath || matchFileName) {
+			return false
+		}
+	}
+	// ignore not match pattern if user specify match pattern
+	// if user not specify, then allow not match pattern
+	return len(helper.matchs) > 0
 }
 
 // getRelPath will make all path start with base and has consistency
