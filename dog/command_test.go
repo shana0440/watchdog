@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"reflect"
 
-	"github.com/bouk/monkey"
+	"bou.ke/monkey"
 	"github.com/stretchr/testify/assert"
 )
 
