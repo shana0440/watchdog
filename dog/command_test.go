@@ -3,7 +3,7 @@ package dog
 import (
 	"testing"
 
-	"context"
+	"os"
 	"os/exec"
 	"reflect"
 
@@ -13,56 +13,57 @@ import (
 
 func TestExecShould(t *testing.T) {
 	t.Run("ExecuteCommandAndBlocking", func(t *testing.T) {
-		monkey.Patch(context.WithCancel, func(ctx context.Context) (context.Context, context.CancelFunc) {
-			return ctx, func() {
-				assert.Fail(t, "shouldn't execute cancel function")
-			}
-		})
+		defer monkey.UnpatchAll()
 
 		executed := false
 		done := make(chan struct{})
-		monkey.Patch(exec.CommandContext, func(ctx context.Context, name string, args ...string) *exec.Cmd {
+		monkey.Patch(exec.Command, func(name string, args ...string) *exec.Cmd {
 			// name is "sh", args[0] is "-c", then is our command
+			monkey.Unpatch(exec.Command)
 			assert.Equal(t, args[1], "true")
 			executed = true
 			done <- struct{}{}
-			monkey.Unpatch(exec.CommandContext)
-			return exec.CommandContext(ctx, name, args...)
+			return exec.Command(name, args...)
 		})
-		defer monkey.UnpatchAll()
 
-		helper := NewCommand(false)
-		helper.Exec("true")
+		cmd := NewCommand(false)
+		cmd.Exec("true")
 		<-done
 		assert.True(t, executed, "no execute command")
 	})
 
 	t.Run("ReExecuteCommandWhenCallReExceute", func(t *testing.T) {
-		cancel := false
-		done := make(chan struct{})
-		monkey.Patch(context.WithCancel, func(ctx context.Context) (context.Context, context.CancelFunc) {
-			return ctx, func() {
-				cancel = true
-				done <- struct{}{}
-			}
-		})
 		defer monkey.UnpatchAll()
 
-		helper := NewCommand(false)
-		helper.Exec("true")
-		helper.ReExecute()
+		killed := false
+		done := make(chan struct{})
+		monkey.Patch(exec.Command, func(name string, args ...string) *exec.Cmd {
+			monkey.Unpatch(exec.Command)
+			cmd := exec.Command(name, args...)
+			monkey.PatchInstanceMethod(reflect.TypeOf(cmd.Process), "Kill", func(p *os.Process) error {
+				killed = true
+				done <- struct{}{}
+				return nil
+			})
+			return cmd
+		})
+
+		cmd := NewCommand(false)
+		cmd.Exec("true")
+		cmd.ReExecute()
 		<-done
-		assert.True(t, cancel, "no execute cancel function")
+		assert.True(t, killed, "no execute process kill function")
 	})
 
 	t.Run("ReceiveErrorWhenCommandWrong", func(t *testing.T) {
-		done := make(chan struct{})
-		monkey.Patch(exec.CommandContext, func(ctx context.Context, name string, args ...string) *exec.Cmd {
-			done <- struct{}{}
-			monkey.Unpatch(exec.CommandContext)
-			return exec.CommandContext(ctx, name, args...)
-		})
 		defer monkey.UnpatchAll()
+
+		done := make(chan struct{})
+		monkey.Patch(exec.Command, func(name string, args ...string) *exec.Cmd {
+			monkey.Unpatch(exec.Command)
+			done <- struct{}{}
+			return exec.Command(name, args...)
+		})
 
 		helper := NewCommand(false)
 		helper.Exec("invalid")

@@ -1,7 +1,6 @@
 package dog
 
 import (
-	"context"
 	"os"
 	"os/exec"
 )
@@ -29,8 +28,7 @@ func NewCommand(clearConsole bool) *Command {
 func (helper *Command) Exec(cmd string) {
 	go func(cmd string) {
 		for {
-			ctx, cancel := context.WithCancel(context.Background())
-			command := exec.CommandContext(ctx, "sh", "-c", cmd)
+			command := exec.Command("sh", "-c", cmd)
 			command.Stdout = os.Stdout
 			command.Stderr = os.Stderr
 			// sh will not happen error, cmd will, but will return via Wait(), not Start()
@@ -42,7 +40,7 @@ func (helper *Command) Exec(cmd string) {
 				}
 			}()
 			<-helper.reExecute
-			cancel()
+			command.Process.Kill()
 			clearConsoleIfNeed(helper.clearConsole)
 		}
 	}(cmd)
