@@ -1,11 +1,11 @@
 package cmd
 
 import (
-	"io/ioutil"
 	"log"
 	"strings"
 
 	"github.com/shana0440/watchdog/dog"
+	"github.com/shana0440/watchdog/helper"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +21,7 @@ var rootCmd = &cobra.Command{
 	built with shana0440. source code at https://github.com/shana0440/watchdog`,
 	Args: cobra.NoArgs,
 	Run: func(cmd *cobra.Command, args []string) {
-		ignoreGit()
+		ignores = append(ignores, helper.IgnoreGit()...)
 		log.Println("ignores: ", strings.Join(ignores, ", "))
 		d := dog.NewDirectory(".", ignores, matchs)
 		c := dog.NewCommand(silent)
@@ -41,14 +41,6 @@ func init() {
 	rootCmd.Flags().StringArrayVarP(&ignores, "ignore", "i", []string{}, "the file or directory you don't want to trigger command")
 	rootCmd.Flags().StringArrayVarP(&matchs, "match", "m", []string{}, "the glob pattern you want to trigger command, watchdog will watch whole directory if not specify")
 	rootCmd.Flags().BoolVarP(&silent, "silent", "s", false, "clear screen before command execute, if you have better name to describe this function, please let me know")
-}
-
-func ignoreGit() {
-	ignores = append(ignores, ".git")
-	bytes, err := ioutil.ReadFile(".gitignore")
-	if err == nil {
-		ignores = append(ignores, strings.Split(strings.Trim(string(bytes), "\n"), "\n")...)
-	}
 }
 
 func Execute() {
