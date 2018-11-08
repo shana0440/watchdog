@@ -10,17 +10,10 @@ import (
 	"github.com/shana0440/watchdog/helper"
 )
 
-func TestIgnoreGetShouldIgnoreComment(t *testing.T) {
+func TestIgnoreGetShould(t *testing.T) {
 	t.Run("IgnoreComment", func(t *testing.T) {
-		os.Rename(".gitignore", ".gitignore.bak")
-		defer func() {
-			os.Rename(".gitignore.bak", ".gitignore")
-		}()
-		ioutil.WriteFile(".gitignore", []byte("# should be ignore"), 0644)
-		defer func() {
-			os.Remove(".gitignore")
-		}()
-
+		cover := createGitIgnoreFile("# should be ignore")
+		defer cover()
 		ignores := helper.IgnoreGit()
 		for _, v := range ignores {
 			if strings.Contains(v, "should be ignore") {
@@ -30,15 +23,8 @@ func TestIgnoreGetShouldIgnoreComment(t *testing.T) {
 	})
 
 	t.Run("ConvertAbsToRelative", func(t *testing.T) {
-		os.Rename(".gitignore", ".gitignore.bak")
-		defer func() {
-			os.Rename(".gitignore.bak", ".gitignore")
-		}()
-		ioutil.WriteFile(".gitignore", []byte("/node_modules"), 0644)
-		defer func() {
-			os.Remove(".gitignore")
-		}()
-
+		cover := createGitIgnoreFile("/node_modules")
+		defer cover()
 		ignores := helper.IgnoreGit()
 		for _, v := range ignores {
 			if strings.HasPrefix(v, "/") {
@@ -46,4 +32,22 @@ func TestIgnoreGetShouldIgnoreComment(t *testing.T) {
 			}
 		}
 	})
+
+	t.Run("IgnoreFileOrDirectory", func(t *testing.T) {
+		cover := createGitIgnoreFile("node_modules")
+		defer cover()
+		ignores := helper.IgnoreGit()
+		if ignores[1] != "node_modules" {
+			t.Error("should ignore node_modules")
+		}
+	})
+}
+
+func createGitIgnoreFile(content string) func() {
+	os.Rename(".gitignore", ".gitignore.bak")
+	ioutil.WriteFile(".gitignore", []byte(content), 0644)
+	return func() {
+		os.Remove(".gitignore")
+		os.Rename(".gitignore.bak", ".gitignore")
+	}
 }

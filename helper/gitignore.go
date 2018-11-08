@@ -6,7 +6,7 @@ import (
 )
 
 func IgnoreGit() []string {
-	targets := make([]string, 1)
+	targets := make([]string, 0)
 	targets = append(targets, ".git")
 
 	bytes, err := ioutil.ReadFile(".gitignore")
