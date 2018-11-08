@@ -3,6 +3,7 @@ package dog
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
@@ -58,6 +59,12 @@ func (helper *Directory) getRecursiveDirs(dir string) []string {
 // ShouldIgnore will return file should be ignore or not
 func (helper *Directory) ShouldIgnore(file string) bool {
 	filename := filepath.Base(file)
+	stat, err := os.Stat(filename)
+	if err == nil {
+		if stat.IsDir() {
+			return false
+		}
+	}
 	for pattern := range helper.ignores {
 		matchPath, err := filepath.Match(pattern, file)
 		matchFileName, err := filepath.Match(pattern, filename)
