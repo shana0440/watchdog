@@ -52,10 +52,6 @@ func (dog *Dog) Run(cmd string) error {
 		}).
 		Filter(func(item interface{}) bool {
 			event := item.(fsnotify.Event)
-			return event.Op&fsnotify.Chmod != fsnotify.Chmod
-		}).
-		Filter(func(item interface{}) bool {
-			event := item.(fsnotify.Event)
 			return !dog.ShouldIgnore(event.Name)
 		}).
 		Subscribe(observer.New(
