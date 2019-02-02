@@ -108,7 +108,7 @@ func TestRunShould(t *testing.T) {
 	})
 }
 
-func TestAddWatchWhenCreateDirShouldAddDirWhenDirCreated(t *testing.T) {
+func TestWatchNewDirShouldAddDirWhenDirCreated(t *testing.T) {
 	dir, cmd, watch := new(MockDirectory), new(MockCommand), new(MockWatch)
 	dog := NewDog(dir, cmd, watch)
 	dir.On("GetDirs").Return([]string{})
@@ -116,7 +116,7 @@ func TestAddWatchWhenCreateDirShouldAddDirWhenDirCreated(t *testing.T) {
 
 	os.Mkdir("tmp", 0777)
 	defer os.RemoveAll("tmp")
-	dog.addWatchWhenCreateDir(fsnotify.Event{Name: "tmp", Op: fsnotify.Create})
+	dog.watchNewDir(fsnotify.Event{Name: "tmp", Op: fsnotify.Create})
 
 	watch.AssertCalled(t, "Add", "tmp")
 }

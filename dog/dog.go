@@ -61,7 +61,7 @@ func (dog *Dog) Run(cmd string) error {
 			handlers.NextFunc(func(item interface{}) {
 				event := item.(fsnotify.Event)
 				log.Println(event)
-				dog.addWatchWhenCreateDir(event)
+				dog.watchNewDir(event)
 				reExecute()
 			}),
 		))
@@ -99,7 +99,7 @@ func (dog *Dog) EventsAndErrorsStream() <-chan interface{} {
 	return ch
 }
 
-func (dog *Dog) addWatchWhenCreateDir(event fsnotify.Event) error {
+func (dog *Dog) watchNewDir(event fsnotify.Event) error {
 	if event.Op&fsnotify.Create == fsnotify.Create {
 		stat, err := os.Stat(event.Name)
 		if err != nil {
