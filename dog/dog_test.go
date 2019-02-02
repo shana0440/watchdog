@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"os"
+	"time"
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/stretchr/testify/mock"
@@ -95,6 +96,7 @@ func TestRunShould(t *testing.T) {
 		done := make(chan struct{})
 		go func() {
 			dog.Run("echo 1")
+			<-time.After(1000 * time.Millisecond)
 			done <- struct{}{}
 		}()
 		ch <- fsnotify.Event{Name: "hello", Op: fsnotify.Write}

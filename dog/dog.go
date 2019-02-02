@@ -9,6 +9,8 @@ import (
 	"github.com/reactivex/rxgo/iterable"
 	"github.com/reactivex/rxgo/observable"
 	"github.com/reactivex/rxgo/observer"
+
+	"github.com/shana0440/watchdog/helper"
 )
 
 type Dog struct {
@@ -36,6 +38,7 @@ func (dog *Dog) watch() {
 func (dog *Dog) Run(cmd string) error {
 	dog.watch()
 	dog.Exec(cmd)
+	reExecute := helper.Debounce(dog.ReExecute)
 	// iterable.New only receive chan interface{}, <-chan interface{}, []interface{}
 	it, _ := iterable.New(dog.EventsAndErrorsStream())
 	sub := observable.
@@ -59,7 +62,7 @@ func (dog *Dog) Run(cmd string) error {
 				event := item.(fsnotify.Event)
 				log.Println(event)
 				dog.addWatchWhenCreateDir(event)
-				dog.ReExecute()
+				reExecute()
 			}),
 		))
 	<-sub
